@@ -1,0 +1,2312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel PRO MAX 2026 - Brandsen</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+body{
+  font-family:Arial, sans-serif;
+  margin:0;
+  background:#f4f6f9;
+  color:#111827;
+}
+
+header{
+  background:#1e3a8a;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-weight:bold;
+  font-size:22px;
+}
+
+#loginPanel{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(135deg,#1e3a8a,#111827);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.login-box{
+  background:white;
+  padding:40px;
+  border-radius:16px;
+  text-align:center;
+  width:340px;
+  box-shadow:0 20px 40px rgba(0,0,0,.25);
+}
+
+.login-box h2{
+  margin-top:0;
+}
+
+#error{
+  color:#dc2626;
+  display:none;
+  margin-top:10px;
+  font-size:14px;
+}
+
+.stats{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin:12px 10px;
+}
+
+.statBox{
+  background:white;
+  padding:10px 15px;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,.08);
+  font-weight:bold;
+  min-width:120px;
+  text-align:center;
+}
+
+.filtro{
+  padding:12px;
+  background:white;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+
+select,input,button{
+  padding:10px 12px;
+  border-radius:10px;
+  border:none;
+  background:#e5e7eb;
+  cursor:pointer;
+  font-size:14px;
+  box-sizing:border-box;
+}
+
+button{
+  background:#dbeafe;
+}
+
+button:hover{
+  filter:brightness(.98);
+}
+
+#map{
+  height:420px;
+  margin:16px;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 6px 16px rgba(0,0,0,.08);
+}
+
+.legendMap{
+  position:absolute;
+  top:150px;
+  right:25px;
+  z-index:900;
+  background:white;
+  padding:10px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.card{
+  background:white;
+  padding:15px;
+  margin:12px 16px;
+  border-radius:14px;
+  box-shadow:0 6px 16px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+
+.card img{
+  width:100%;
+  border-radius:12px;
+  margin-top:8px;
+  max-height:260px;
+  object-fit:cover;
+}
+
+.estado{
+  padding:6px 10px;
+  border-radius:8px;
+  color:white;
+  font-size:12px;
+  display:inline-block;
+  margin:6px 0;
+}
+
+.pendiente{background:#f59e0b;}
+.en_proceso{background:#2563eb;}
+.resuelto{background:#16a34a;}
+
+.badgeCircular{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:bold;
+  margin:6px 0;
+}
+
+.badge-ok{background:#16a34a;color:white;}
+.badge-no{background:#6b7280;color:white;}
+.badge-alert{background:#dc2626;color:white;}
+
+.actionBox{
+  margin-top:10px;
+  padding:10px;
+  background:#f1f5f9;
+  border-radius:10px;
+  line-height:1.5;
+  font-size:14px;
+}
+
+#informePanel,#iaPanel{
+  display:none;
+  background:white;
+  margin:16px;
+  padding:16px;
+  border-radius:14px;
+  box-shadow:0 6px 16px rgba(0,0,0,.08);
+}
+
+.panelModal{
+  display:none;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:white;
+  width:95%;
+  max-width:820px;
+  padding:20px;
+  border-radius:20px;
+  z-index:9999;
+  box-shadow:0 25px 50px rgba(0,0,0,.4);
+  max-height:90vh;
+  overflow:auto;
+}
+
+.panelGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-top:12px;
+}
+
+.box{
+  padding:15px;
+  border-radius:12px;
+  color:white;
+  font-weight:bold;
+}
+
+.box.green{background:#16a34a;}
+.box.blue{background:#2563eb;}
+.box.red{background:#dc2626;}
+.box.dark{background:#111827;}
+.box.orange{background:#d97706;}
+
+.small{
+  font-size:12px;
+  color:#4b5563;
+}
+
+a.btnLink{
+  display:block;
+  margin-top:8px;
+  background:#2563eb;
+  color:white;
+  padding:8px;
+  border-radius:8px;
+  text-align:center;
+  text-decoration:none;
+}
+
+.cardActions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+
+.cardActions button,
+.cardActions a,
+.cardActions select{
+  width:100%;
+  margin:0;
+}
+
+@media (max-width:768px){
+  body{
+    font-size:14px;
+    overflow-x:hidden;
+  }
+
+  header{
+    font-size:18px;
+    padding:12px;
+    line-height:1.3;
+  }
+
+  .filtro{
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+
+  .filtro button,
+  .filtro select,
+  .filtro input{
+    width:100%;
+    font-size:14px;
+    padding:12px;
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin:10px;
+  }
+
+  .statBox{
+    width:100%;
+    min-width:unset;
+    font-size:13px;
+    padding:10px;
+  }
+
+  #map{
+    height:260px;
+    margin:10px;
+  }
+
+  .card{
+    margin:10px;
+    padding:12px;
+    font-size:14px;
+    word-wrap:break-word;
+  }
+
+  .card img{
+    max-height:220px;
+  }
+
+  .cardActions{
+    grid-template-columns:1fr;
+  }
+
+  .card button,
+  .card select,
+  .card a{
+    width:100%;
+    box-sizing:border-box;
+  }
+
+  .panelModal{
+    width:96%;
+    padding:15px;
+    max-height:92vh;
+  }
+
+  .panelGrid{
+    grid-template-columns:1fr;
+  }
+
+  .legendMap{
+    position:static;
+    margin:10px;
+  }
+
+  table{
+    font-size:12px;
+    display:block;
+    overflow:auto;
+    white-space:nowrap;
+  }
+
+  .login-box{
+    width:90%;
+    padding:24px;
+  }
+}
+
+/* ===== Gestión Residuos / Recuperadores Circulares ===== */
+.btnRecuperadores{
+  background:#dcfce7;
+  color:#166534;
+  font-weight:bold;
+}
+
+#panelResiduos{
+  max-width:980px;
+}
+
+.residuosTabs{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  margin:12px 0;
+}
+
+.residuosTabs button{
+  background:#e5e7eb;
+  font-weight:bold;
+}
+
+.residuosTabs button.active{
+  background:#16a34a;
+  color:white;
+}
+
+.formRecuperador{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  background:#f8fafc;
+  padding:12px;
+  border-radius:14px;
+  margin-top:12px;
+}
+
+.formRecuperador input,
+.formRecuperador select,
+.formRecuperador textarea{
+  width:100%;
+  border:1px solid #e5e7eb;
+  background:white;
+}
+
+.formRecuperador textarea{
+  grid-column:1 / -1;
+  min-height:70px;
+  resize:vertical;
+}
+
+.formRecuperador .full{
+  grid-column:1 / -1;
+}
+
+.recCard{
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  padding:12px;
+  border-radius:14px;
+  margin-top:10px;
+}
+
+.recCard h3{
+  margin:0;
+  color:#14532d;
+}
+
+.recCard p{
+  margin:5px 0;
+  color:#475569;
+  line-height:1.4;
+}
+
+.recActions{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.recActions button,
+.recActions select{
+  width:100%;
+}
+
+.badgeActivo{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+  background:#16a34a;
+  color:white;
+}
+
+.badgePausado{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+  background:#6b7280;
+  color:white;
+}
+
+.solicitudCircular{
+  background:white;
+  border:1px solid #e5e7eb;
+  padding:12px;
+  border-radius:14px;
+  margin-top:10px;
+}
+
+.solicitudCircular b{
+  color:#1e3a8a;
+}
+
+@media(max-width:768px){
+  .residuosTabs,
+  .formRecuperador,
+  .recActions{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* ===========================
+   PRO MAX 2026 UI UPGRADE
+   =========================== */
+:root{
+  --pm-bg:#eef4ff;
+  --pm-card:#ffffff;
+  --pm-blue:#2563eb;
+  --pm-blue2:#1e3a8a;
+  --pm-green:#16a34a;
+  --pm-dark:#0f172a;
+  --pm-muted:#64748b;
+  --pm-line:#e2e8f0;
+  --pm-shadow:0 18px 45px rgba(15,23,42,.13);
+}
+
+body{
+  background:
+    radial-gradient(circle at top left,rgba(37,99,235,.16),transparent 28%),
+    radial-gradient(circle at top right,rgba(22,163,74,.15),transparent 28%),
+    linear-gradient(180deg,#f8fbff,#eef4ff);
+}
+
+.topPro{
+  background:linear-gradient(135deg,#0f172a,#1e3a8a 55%,#166534);
+  color:white;
+  padding:18px 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  box-shadow:0 16px 36px rgba(15,23,42,.28);
+  position:sticky;
+  top:0;
+  z-index:800;
+}
+
+.topBrand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.topLogo{
+  width:58px;
+  height:58px;
+  border-radius:20px;
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:32px;
+  box-shadow:inset 0 0 20px rgba(255,255,255,.12);
+}
+
+.topPro h1{
+  margin:0;
+  font-size:26px;
+  letter-spacing:.2px;
+}
+
+.topPro p{
+  margin:4px 0 0;
+  font-size:13px;
+  color:#dbeafe;
+}
+
+.topStatus{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.topStatus span{
+  background:rgba(22,163,74,.18);
+  border:1px solid rgba(134,239,172,.45);
+  color:#bbf7d0;
+  padding:9px 12px;
+  border-radius:999px;
+  font-weight:bold;
+  font-size:13px;
+}
+
+.topStatus button{
+  background:white;
+  color:#14532d;
+  font-weight:900;
+  box-shadow:0 8px 22px rgba(0,0,0,.22);
+}
+
+.stats{
+  max-width:1180px;
+  margin:18px auto 12px;
+  padding:0 12px;
+}
+
+.statBox{
+  border:1px solid rgba(255,255,255,.8);
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(14px);
+  border-radius:20px;
+  padding:16px 18px;
+  box-shadow:var(--pm-shadow);
+  color:#0f172a;
+  min-width:150px;
+}
+
+.statBox span{
+  color:#1e3a8a;
+  font-size:22px;
+}
+
+.filtro{
+  max-width:1180px;
+  margin:0 auto 14px;
+  border-radius:26px;
+  padding:14px;
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.85);
+  box-shadow:var(--pm-shadow);
+}
+
+select,input,button{
+  border:1px solid #dbe4f0;
+  background:#f8fafc;
+  transition:.18s ease;
+}
+
+button{
+  background:#eaf2ff;
+  color:#0f172a;
+  font-weight:800;
+}
+
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 8px 18px rgba(37,99,235,.12);
+}
+
+.filtro button:nth-of-type(1){
+  background:#dbeafe;
+  color:#1e3a8a;
+}
+
+.filtro button:nth-of-type(2){
+  background:#dcfce7;
+  color:#14532d;
+}
+
+.filtro button:nth-of-type(6),
+.filtro button:nth-of-type(7){
+  background:#ecfdf5;
+  color:#166534;
+}
+
+#map{
+  max-width:1180px;
+  margin:16px auto;
+  height:470px;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:var(--pm-shadow);
+}
+
+.legendMap{
+  top:175px;
+  right:calc((100vw - 1180px)/2 + 18px);
+  border:1px solid #e2e8f0;
+  border-radius:18px;
+  box-shadow:0 14px 30px rgba(15,23,42,.14);
+}
+
+#lista{
+  max-width:1180px;
+  margin:0 auto 40px;
+}
+
+.card{
+  border-radius:26px;
+  border:1px solid rgba(255,255,255,.9);
+  background:rgba(255,255,255,.94);
+  box-shadow:var(--pm-shadow);
+  padding:18px;
+}
+
+.card:hover{
+  transform:translateY(-1px);
+}
+
+.badgeCircular,
+.estado{
+  border-radius:999px;
+}
+
+.actionBox{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:18px;
+}
+
+.panelModal{
+  border-radius:28px;
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:0 30px 80px rgba(15,23,42,.38);
+}
+
+.panelModal h2{
+  margin-top:0;
+  color:#0f172a;
+  font-size:24px;
+}
+
+#panelResiduos{
+  max-width:1050px;
+  background:
+    radial-gradient(circle at top right,rgba(22,163,74,.12),transparent 30%),
+    white;
+}
+
+.residuosTabs{
+  background:#eef4ff;
+  padding:8px;
+  border-radius:22px;
+  border:1px solid #dbeafe;
+}
+
+.residuosTabs button{
+  border-radius:16px;
+}
+
+.formRecuperador{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:24px;
+  padding:16px;
+}
+
+.recCard,
+.solicitudCircular{
+  border-radius:22px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 10px 24px rgba(15,23,42,.07);
+}
+
+.recCard h3{
+  font-size:19px;
+}
+
+.recActions button{
+  border-radius:14px;
+}
+
+.box{
+  border-radius:20px;
+  box-shadow:0 12px 24px rgba(15,23,42,.12);
+}
+
+.login-box{
+  border-radius:28px;
+  box-shadow:0 30px 80px rgba(0,0,0,.35);
+}
+
+#loginPanel{
+  background:
+    radial-gradient(circle at 20% 20%,rgba(37,99,235,.45),transparent 30%),
+    radial-gradient(circle at 80% 10%,rgba(22,163,74,.35),transparent 28%),
+    linear-gradient(135deg,#020617,#0f172a,#1e3a8a);
+}
+
+.login-box h2{
+  color:#0f172a;
+  font-size:26px;
+}
+
+.login-box button{
+  background:linear-gradient(135deg,#2563eb,#1e3a8a);
+  color:white;
+  width:100%;
+  padding:13px;
+  border-radius:16px;
+}
+
+@media(max-width:768px){
+  .topPro{
+    flex-direction:column;
+    align-items:flex-start;
+    position:relative;
+  }
+  .topStatus{
+    width:100%;
+  }
+  .topStatus button{
+    width:100%;
+  }
+  #map{
+    height:320px;
+    margin:10px;
+    border-radius:22px;
+  }
+  .legendMap{
+    right:auto;
+    top:auto;
+  }
+  .statBox span{
+    font-size:18px;
+  }
+}
+
+
+.proDashboard{
+  max-width:1180px;
+  margin:0 auto 16px;
+  padding:0 12px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.proDashCard{
+  background:rgba(255,255,255,.9);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:24px;
+  padding:16px;
+  box-shadow:var(--pm-shadow);
+}
+.proDashCard.primary{
+  background:linear-gradient(135deg,#1e3a8a,#2563eb);
+  color:white;
+}
+.proDashCard span{
+  display:inline-flex;
+  width:42px;
+  height:42px;
+  align-items:center;
+  justify-content:center;
+  border-radius:15px;
+  background:#eef4ff;
+  margin-bottom:10px;
+  font-size:22px;
+}
+.proDashCard.primary span{
+  background:rgba(255,255,255,.18);
+}
+.proDashCard b{
+  display:block;
+  font-size:16px;
+}
+.proDashCard p{
+  margin:6px 0 0;
+  color:#64748b;
+  font-size:13px;
+  line-height:1.35;
+}
+.proDashCard.primary p{
+  color:#dbeafe;
+}
+@media(max-width:900px){
+  .proDashboard{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:520px){
+  .proDashboard{grid-template-columns:1fr;}
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="loginPanel">
+  <div class="login-box">
+    <h2>🔐 Panel Empresarial</h2>
+    <input type="password" id="passInput" placeholder="Contraseña">
+    <br><br>
+    <button onclick="iniciarSesion()">Ingresar</button>
+    <div id="error">Clave incorrecta</div>
+  </div>
+</div>
+
+
+<header class="topPro">
+  <div class="topBrand">
+    <div class="topLogo">♻</div>
+    <div>
+      <h1>Panel PRO MAX 2026</h1>
+      <p>Reclamos · IA municipal · Recuperadores Circulares · Gestión operativa</p>
+    </div>
+  </div>
+  <div class="topStatus">
+    <span>● Online</span>
+    <button onclick="abrirGestionResiduos()">♻ Recuperadores</button>
+  </div>
+</header>
+
+
+<div class="stats">
+  <div class="statBox">Total: <span id="total">0</span></div>
+  <div class="statBox">Basura: <span id="basura">0</span></div>
+  <div class="statBox">Calle: <span id="calle">0</span></div>
+  <div class="statBox">Luminaria: <span id="luz">0</span></div>
+  <div class="statBox">Cloacas: <span id="cloaca">0</span></div>
+  <div class="statBox">Otros: <span id="otros">0</span></div>
+</div>
+
+<div class="filtro">
+  <select id="filtroBarrio">
+    <option value="todos">Todos</option>
+    <option>Radio centrico</option>
+    <option>Barrio republica</option>
+    <option>Los pinos</option>
+    <option>Las higueras</option>
+    <option>El soñado</option>
+    <option>El matadero</option>
+    <option>Retama</option>
+    <option>La manzana</option>
+    <option>La rural</option>
+    <option>La dolly 1</option>
+    <option>La dolly 2</option>
+    <option>Las americas</option>
+    <option>La parada</option>
+    <option>Bajo belgrano</option>
+    <option>I.isabel</option>
+    <option>Las mandarinas</option>
+    <option>Jeppener</option>
+    <option>Altamirano</option>
+    <option>Los bosquecitos</option>
+    <option>Gomez</option>
+    <option>Las golondrinas</option>
+    <option>Las acacias</option>
+  </select>
+
+  <select id="filtroTipo">
+    <option value="todos">Todos</option>
+    <option>Basura</option>
+    <option>Calle</option>
+    <option>Luminaria</option>
+    <option>Cloacas</option>
+    <option>Otros</option>
+  </select>
+
+  <input type="text" id="busqueda" placeholder="Buscar lugar...">
+  <button onclick="buscarGoogle()">🔎 Buscar</button>
+
+  <button onclick="cargar()">Actualizar</button>
+  <button onclick="exportarExcel()">Excel</button>
+  <button onclick="toggleInforme()">Informe</button>
+  <button onclick="window.print()">Imprimir</button>
+  <button onclick="exportarPDF()">PDF</button>
+  <button onclick="generarResumenIA()">🤖 IA por Barrio</button>
+  <button onclick="abrirCircular()">♻️ Economía Circular</button>
+  <button class="btnRecuperadores" onclick="abrirGestionResiduos()">♻ Recuperadores Circulares</button>
+  <button onclick="exportarInformePDF()">📄 Informe Circular PDF</button>
+  <button onclick="analizarIAPro()">🧠 IA PRO</button>
+</div>
+
+
+<section class="proDashboard">
+  <div class="proDashCard primary">
+    <span>🧠 IA municipal</span>
+    <b>Detección inteligente</b>
+    <p>Clasifica reclamos, prioridad y materiales circulares.</p>
+  </div>
+  <div class="proDashCard">
+    <span>♻</span>
+    <b>Recuperadores Circulares</b>
+    <p>Personas y empresas cargadas desde Firebase.</p>
+  </div>
+  <div class="proDashCard">
+    <span>📍</span>
+    <b>Mapa operativo</b>
+    <p>Seguimiento territorial por barrio y tipo.</p>
+  </div>
+  <div class="proDashCard">
+    <span>📄</span>
+    <b>Informes</b>
+    <p>Excel, PDF, órdenes y diagnóstico circular.</p>
+  </div>
+</section>
+
+<div class="legendMap">
+  🟢 Reciclable / circular<br>
+  🔴 Crítico / urgente<br>
+  ⚪ Normal
+</div>
+
+<div id="map"></div>
+
+<div id="panelIAPro" class="panelModal">
+  <h2>🧠 IA Híbrida Municipal</h2>
+  <div id="resultadoIA"></div>
+  <br>
+  <button onclick="cerrarIAPro()">Cerrar</button>
+</div>
+
+<div id="panelCircular" class="panelModal">
+  <h2>♻️ Sistema Inteligente Circular - Brandsen</h2>
+  <div id="dashboardCircular"></div>
+  <br>
+  <canvas id="graficoCircular" height="140"></canvas>
+  <br><br>
+  <div id="analisisIA"></div>
+  <br>
+  <button onclick="cerrarCircular()">Cerrar</button>
+</div>
+
+<div id="panelResiduos" class="panelModal">
+  <h2>♻ Centro PRO de Recuperadores Circulares</h2>
+  <p class="small">
+    Administrá personas, empresas y solicitudes circulares conectadas con la página pública.
+    El vecino no ve teléfonos: la solicitud llega primero al administrador para revisar y derivar.
+  </p>
+
+  <div class="residuosTabs">
+    <button id="tabRecuperadores" class="active" onclick="mostrarGestionResiduos('recuperadores')">Recuperadores</button>
+    <button id="tabSolicitudes" onclick="mostrarGestionResiduos('solicitudes')">Solicitudes</button>
+    <button id="tabRecursosIA" onclick="mostrarGestionResiduos('recursos')">Recursos IA</button>
+  </div>
+
+  <div id="viewRecuperadores">
+    <h3>Cargar / editar recuperador circular</h3>
+
+    <div class="formRecuperador">
+      <input type="hidden" id="recuperadorId">
+
+      <input id="recNombre" placeholder="Nombre o empresa. Ej: Brandsen Ciruja">
+
+      <select id="recCategoria">
+        <option value="madera">Madera / muebles</option>
+        <option value="plastico">Plástico / envases</option>
+        <option value="electronica">Electrónica / RAEE</option>
+        <option value="poda">Ramas / poda</option>
+        <option value="metal">Metal / caños</option>
+        <option value="carton">Cartón / papel</option>
+        <option value="obra">Materiales de obra</option>
+        <option value="general">General / a revisar</option>
+      </select>
+
+      <input id="recRubro" placeholder="Rubro. Ej: Retira pallets, cajones y madera">
+      <input id="recZona" placeholder="Zona. Ej: Todos los barrios">
+
+      <input id="recTelefono" placeholder="Teléfono interno / WhatsApp. No se muestra al vecino">
+      <select id="recActivo">
+        <option value="true">Activo</option>
+        <option value="false">Pausado</option>
+      </select>
+
+      <input id="recPrioridad" type="number" placeholder="Prioridad. Ej: 1" value="1">
+
+      <textarea id="recNotas" placeholder="Notas internas del administrador"></textarea>
+
+      <button class="full" onclick="guardarRecuperadorCircular()" style="background:#16a34a;color:white;font-weight:bold;">
+        Guardar recuperador circular
+      </button>
+      <button class="full" onclick="limpiarFormRecuperador()">
+        Limpiar formulario
+      </button>
+      <button class="full" onclick="cargarEjemplosRecuperadores()" style="background:#1e3a8a;color:white;font-weight:bold;">
+        Cargar ejemplos iniciales
+      </button>
+    </div>
+
+    <h3>Recuperadores cargados</h3>
+    <div id="listaRecuperadoresPanel"></div>
+  </div>
+
+  <div id="viewSolicitudes" style="display:none;">
+    <h3>Solicitudes circulares recibidas</h3>
+    <p class="small">Acá llegan los pedidos desde la página de reclamos / residuos para que el administrador decida.</p>
+    <div id="listaSolicitudesCirculares"></div>
+  </div>
+
+  <div id="viewRecursosIA" style="display:none;">
+    <h3>Recursos detectados por IA en reclamos</h3>
+    <p class="small">Se listan reclamos donde la IA detectó material circular.</p>
+    <div id="listaRecursosIAPanel"></div>
+  </div>
+
+  <br>
+  <button onclick="cerrarGestionResiduos()">Cerrar</button>
+</div>
+
+<div id="informePanel">
+  <h3>Informe</h3>
+  <div id="informeContenido"></div>
+</div>
+
+<div id="iaPanel">
+  <h3>Resumen Inteligente</h3>
+  <div id="iaContenido"></div>
+</div>
+
+<div id="lista"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js">
+async function cargarEjemplosRecuperadores(){
+  if(!confirm("¿Cargar ejemplos iniciales de Recuperadores Circulares?")) return;
+
+  const ejemplos = [
+    {nombre:"Brandsen Ciruja",categoria:"madera",rubro:"Retira cajones, pallets, muebles y madera",zona:"Brandsen",telefono:"",activo:true,prioridad:1,notas:"Ejemplo editable"},
+    {nombre:"Brandsen Recicla",categoria:"plastico",rubro:"Recibe botellas, bidones, envases y plásticos",zona:"Todos los barrios",telefono:"",activo:true,prioridad:2,notas:"Ejemplo editable"},
+    {nombre:"Tecno Circular",categoria:"electronica",rubro:"Recibe cables, TV, PC, celulares y RAEE",zona:"Centro y barrios",telefono:"",activo:true,prioridad:3,notas:"Ejemplo editable"},
+    {nombre:"Verde Poda",categoria:"poda",rubro:"Recibe ramas, poda y material orgánico",zona:"Barrios y zonas verdes",telefono:"",activo:true,prioridad:4,notas:"Ejemplo editable"}
+  ];
+
+  try{
+    for(const e of ejemplos){
+      e.telefono = normalizarTelefonoAR(e.telefono);
+      e.telefonoVisible = false;
+      e.creado = new Date();
+      e.actualizado = new Date();
+      await db.collection("recuperadores_circulares").add(e);
+    }
+    alert("Ejemplos cargados ✅");
+    cargarRecuperadoresCirculares();
+  }catch(err){
+    console.error(err);
+    alert("Error cargando ejemplos: " + err.message);
+  }
+}
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
+<script>
+const MAPBOX_TOKEN = "pk.eyJ1IjoibHVrYXNzc3NzIiwiYSI6ImNtbnFjem9nZDA2ZGwyb29kdTZsaHE4cmQifQ.0pT5NUsfROkL4CMjq4r_wA";
+
+firebase.initializeApp({
+  apiKey:"AIzaSyCAugMeB_lM2pz4x4Ywgp3ahviFkKNZOXY",
+  authDomain:"registros-online-brandsen.firebaseapp.com",
+  projectId:"registros-online-brandsen"
+});
+
+const db = firebase.firestore();
+
+function iniciarSesion(){
+  const pass = document.getElementById("passInput").value;
+  if(pass === "ADMIN34"){
+    document.getElementById("loginPanel").style.display = "none";
+    setTimeout(()=>{
+      map.invalidateSize();
+      cargar();
+    },700);
+  }else{
+    document.getElementById("error").style.display = "block";
+  }
+}
+
+let map = L.map('map').setView([-35.21,-58.23],13);
+let mapboxLayer = L.tileLayer(
+  `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`,
+  {
+    tileSize:512,
+    zoomOffset:-1,
+    maxZoom:20,
+    attribution:'© Mapbox © OpenStreetMap'
+  }
+).addTo(map);
+
+mapboxLayer.on('tileerror', ()=>{
+  console.warn("Mapbox falló, usando OSM fallback");
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+});
+
+setTimeout(()=>map.invalidateSize(),500);
+
+// IA FOTO
+let modeloIA = null;
+let cacheFoto = {};
+let graficoCircularRef = null;
+
+(async function initIA(){
+  try{
+    modeloIA = await cocoSsd.load();
+    console.log("IA de foto lista");
+  }catch(e){
+    console.warn("IA foto no disponible", e);
+  }
+})();
+
+function normalizar(txt){
+  return (txt || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"");
+}
+
+function evaluarPorTexto(d){
+  const t = normalizar(d.desc);
+  const tipo = normalizar(d.tipo);
+
+  let material = "No detectado";
+  let circular = false;
+  let area = "Servicios Generales";
+  let prioridad = "Media";
+  let accion = "Inspección";
+
+  if(tipo === "calle"){
+    area = "Obras Públicas";
+    accion = "Reparación vial";
+    prioridad = "Alta";
+  } else if(tipo === "luminaria"){
+    area = "Alumbrado Público";
+    accion = "Revisión luminaria";
+  } else if(tipo === "cloacas"){
+    area = "Saneamiento";
+    accion = "Intervención cloacal";
+    prioridad = "Alta";
+  } else if(tipo === "basura"){
+    area = "Higiene Urbana";
+    accion = "Recolección";
+  }
+
+  if(t.includes("pozo") || t.includes("inund") || t.includes("desborde")){
+    prioridad = "Alta";
+  }
+
+  if(t.includes("rama") || t.includes("poda") || t.includes("arbol")){
+    material = "Ramas";
+    circular = true;
+    area = "Espacios Verdes";
+    accion = "Retiro de ramas";
+  } else if(t.includes("madera") || t.includes("mueble") || t.includes("tabla")){
+    material = "Madera";
+    circular = true;
+    area = "Reciclaje";
+    accion = "Retiro de madera";
+  } else if(t.includes("vidrio") || t.includes("cristal")){
+    material = "Vidrio";
+    circular = true;
+    area = "Reciclaje";
+    accion = "Retiro de vidrio";
+  } else if(t.includes("botella") || t.includes("plastico") || t.includes("envase") || t.includes("bolsa")){
+    material = "Plástico";
+    circular = true;
+    area = "Reciclaje";
+    accion = "Retiro de plástico";
+  } else if(t.includes("carton") || t.includes("papel")){
+    material = "Cartón";
+    circular = true;
+    area = "Reciclaje";
+    accion = "Retiro de cartón";
+  } else if(t.includes("electronico") || t.includes("televisor") || t.includes("tv") || t.includes("pc") || t.includes("computadora") || t.includes("heladera")){
+    material = "Electrónico";
+    circular = true;
+    area = "RAEE";
+    accion = "Retiro electrónico especial";
+    prioridad = "Alta";
+  }
+
+  return {material, circular, area, prioridad, accion, origen:"texto"};
+}
+
+async function detectarPorFoto(url){
+  if(!url || !modeloIA) return null;
+  if(cacheFoto[url] !== undefined) return cacheFoto[url];
+
+  try{
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = url;
+
+    await new Promise((resolve, reject)=>{
+      img.onload = resolve;
+      img.onerror = reject;
+    });
+
+    const pred = await modeloIA.detect(img);
+    const clases = pred.map(p => normalizar(p.class)).join(" ");
+
+    let salida = null;
+
+    if(clases.includes("bottle")){
+      salida = {material:"Plástico", circular:true, area:"Reciclaje", prioridad:"Media", accion:"Retiro de plástico", origen:"foto"};
+    } else if(clases.includes("wine glass") || clases.includes("cup")){
+      salida = {material:"Vidrio", circular:true, area:"Reciclaje", prioridad:"Media", accion:"Retiro de vidrio", origen:"foto"};
+    } else if(
+      clases.includes("tv") || clases.includes("laptop") || clases.includes("cell phone") ||
+      clases.includes("keyboard") || clases.includes("mouse") || clases.includes("remote")
+    ){
+      salida = {material:"Electrónico", circular:true, area:"RAEE", prioridad:"Alta", accion:"Retiro electrónico especial", origen:"foto"};
+    } else if(clases.includes("chair") || clases.includes("bench") || clases.includes("couch")){
+      salida = {material:"Madera", circular:true, area:"Reciclaje", prioridad:"Media", accion:"Retiro de madera", origen:"foto"};
+    }
+
+    cacheFoto[url] = salida;
+    return salida;
+  }catch(e){
+    console.warn("No se pudo analizar foto", e);
+    cacheFoto[url] = null;
+    return null;
+  }
+}
+
+function combinarEvaluacion(base, foto){
+  if(!foto) return base;
+  if(foto.circular && !base.circular) return foto;
+  if(foto.circular && base.circular){
+    return {
+      material: foto.material || base.material,
+      circular: true,
+      area: foto.area || base.area,
+      prioridad: base.prioridad === "Alta" ? "Alta" : (foto.prioridad || base.prioridad),
+      accion: foto.accion || base.accion,
+      origen: "foto+texto"
+    };
+  }
+  return base;
+}
+
+async function evaluarReclamoInteligente(d){
+  const base = evaluarPorTexto(d);
+  const foto = await detectarPorFoto(d.foto);
+  return combinarEvaluacion(base, foto);
+}
+
+function colorMarcador(evalData){
+  if(evalData.prioridad === "Alta") return "#dc2626";
+  if(evalData.circular) return "#16a34a";
+  return "#6b7280";
+}
+
+let unsubscribe = null;
+let markers = [];
+let dataGlobal = [];
+let ultimoInformeCircular = null;
+
+function limpiarMapaMarcadores(){
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+}
+
+function buscarGoogle(){
+  const q = document.getElementById("busqueda").value;
+  if(!q) return;
+  window.open(`https://www.google.com/maps/search/${encodeURIComponent(q)}`,"_blank");
+}
+
+function cargar(){
+  if(unsubscribe){
+    unsubscribe();
+    unsubscribe = null;
+  }
+
+  const barrio = document.getElementById("filtroBarrio").value;
+  const tipo = document.getElementById("filtroTipo").value;
+
+  unsubscribe = db.collection("reclamos").onSnapshot(async snap=>{
+    limpiarMapaMarcadores();
+    document.getElementById("lista").innerHTML = "";
+    dataGlobal = [];
+
+    let stats = {total:0,basura:0,calle:0,luz:0,cloaca:0,otros:0};
+    let bounds = [];
+
+    const docs = [];
+    snap.forEach(doc=>{
+      const d = doc.data();
+      if(!d) return;
+      if(barrio !== "todos" && d.barrio !== barrio) return;
+      if(tipo !== "todos" && d.tipo !== tipo) return;
+      docs.push({id:doc.id, ...d});
+    });
+
+    for(const d of docs){
+      dataGlobal.push(d);
+
+      stats.total++;
+      if(d.tipo === "Basura") stats.basura++;
+      if(d.tipo === "Calle") stats.calle++;
+      if(d.tipo === "Luminaria") stats.luz++;
+      if(d.tipo === "Cloacas") stats.cloaca++;
+      if(d.tipo === "Otros") stats.otros++;
+
+      const numero = d.numero || ("REC-" + d.id.slice(0,4).toUpperCase());
+      const ev = await evaluarReclamoInteligente(d);
+
+      const badgeClass = ev.prioridad === "Alta" ? "badge-alert" : (ev.circular ? "badge-ok" : "badge-no");
+      const badgeText = ev.prioridad === "Alta" ? `⚠️ ${ev.material}` : (ev.circular ? `♻️ ${ev.material}` : "• No reciclable");
+
+      const icono = L.divIcon({
+        html:`<div style="
+          background:${colorMarcador(ev)};
+          width:24px;height:24px;border-radius:50%;
+          border:3px solid white;
+          box-shadow:0 0 0 2px rgba(0,0,0,.08);
+        "></div>`,
+        className:"",
+        iconSize:[24,24]
+      });
+
+      if(d.lat && d.lng){
+        const popupHtml = `
+          <b>${numero}</b><br>
+          <div class="estado ${d.estado || "pendiente"}">${d.estado || "pendiente"}</div><br>
+          <span class="badgeCircular ${badgeClass}" style="display:inline-block;">${badgeText}</span><br>
+          <b>${d.tipo || ""}</b> - ${d.barrio || ""}<br>
+          ${d.desc || ""}
+        `;
+        const m = L.marker([d.lat, d.lng], {icon:icono}).addTo(map).bindPopup(popupHtml);
+        markers.push(m);
+        bounds.push([d.lat,d.lng]);
+      }
+
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <b style="color:#1e3a8a;">${numero}</b><br>
+
+        <div class="estado ${d.estado || "pendiente"}">${d.estado || "pendiente"}</div>
+
+        <div class="badgeCircular ${badgeClass}">${badgeText}</div>
+
+        <b>${d.tipo || ""}</b> - ${d.barrio || ""}<br>
+
+        <div class="small">
+          🏛 Área sugerida: <b>${ev.area}</b><br>
+          ⚠️ Prioridad: <b>${ev.prioridad}</b><br>
+          🛠 Acción: <b>${ev.accion}</b><br>
+          🔎 Origen detección: <b>${ev.origen}</b>
+        </div>
+
+        <div style="margin-top:8px;">
+          ${d.desc || ""}
+        </div>
+
+        ${d.foto ? `<img src="${d.foto}" alt="Foto reclamo">` : ""}
+
+        <div class="cardActions">
+          <select onchange="cambiarEstado('${d.id}', this.value)">
+            <option value="pendiente" ${d.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
+            <option value="en_proceso" ${d.estado === "en_proceso" ? "selected" : ""}>En proceso</option>
+            <option value="resuelto" ${d.estado === "resuelto" ? "selected" : ""}>Resuelto</option>
+          </select>
+
+          <button onclick="eliminarRegistro('${d.id}')" style="background:#dc2626;color:white;">🗑 Eliminar</button>
+
+          <button onclick="generarOrden('${d.id}')" style="background:#16a34a;color:white;">⚙️ Generar Orden</button>
+
+          <button onclick="enviarMunicipio('${d.id}')" style="background:#0f766e;color:white;">📤 Enviar al Municipio</button>
+        </div>
+
+        <a class="btnLink" href="https://www.google.com/maps?q=${d.lat},${d.lng}" target="_blank">📍 Cómo llegar</a>
+      `;
+      document.getElementById("lista").appendChild(div);
+    }
+
+    document.getElementById("total").innerText = stats.total;
+    document.getElementById("basura").innerText = stats.basura;
+    document.getElementById("calle").innerText = stats.calle;
+    document.getElementById("luz").innerText = stats.luz;
+    document.getElementById("cloaca").innerText = stats.cloaca;
+    document.getElementById("otros").innerText = stats.otros;
+
+    if(bounds.length > 0){
+      map.fitBounds(bounds, {padding:[40,40]});
+    }
+  });
+}
+
+function cambiarEstado(id, estado){
+  db.collection("reclamos").doc(id).update({estado});
+}
+
+function eliminarRegistro(id){
+  if(confirm("¿Eliminar reclamo?")){
+    db.collection("reclamos").doc(id).delete();
+  }
+}
+
+async function generarOrden(id){
+  try{
+    const docRef = await db.collection("reclamos").doc(id).get();
+    const d = docRef.data();
+    if(!d) return;
+
+    const ev = await evaluarReclamoInteligente(d);
+    const numero = d.numero || ("REC-" + id.slice(0,4).toUpperCase());
+    const numeroOT = "OT-" + numero.replace("REC-","");
+
+    alert(
+      "ORDEN DE TRABAJO\n\n" +
+      "OT: " + numeroOT + "\n" +
+      "Reclamo: " + numero + "\n" +
+      "Área: " + ev.area + "\n" +
+      "Acción: " + ev.accion + "\n" +
+      "Prioridad: " + ev.prioridad + "\n" +
+      "Material: " + ev.material + "\n" +
+      "Circular: " + (ev.circular ? "Sí" : "No")
+    );
+
+    await db.collection("ordenes").add({
+      reclamoId:id,
+      reclamoNumero:numero,
+      ot:numeroOT,
+      area:ev.area,
+      accion:ev.accion,
+      prioridad:ev.prioridad,
+      material:ev.material,
+      circular:ev.circular,
+      barrio:d.barrio || "",
+      desc:d.desc || "",
+      fecha:new Date()
+    });
+  }catch(e){
+    console.error(e);
+    alert("Error al generar orden");
+  }
+}
+
+async function enviarMunicipio(id){
+  try{
+    const docRef = await db.collection("reclamos").doc(id).get();
+    const d = docRef.data();
+    if(!d) return;
+
+    const ev = await evaluarReclamoInteligente(d);
+    const numero = d.numero || ("REC-" + id.slice(0,4).toUpperCase());
+    const numeroOT = "OT-" + numero.replace("REC-","");
+    const mapa = `https://www.google.com/maps?q=${d.lat},${d.lng}`;
+
+    const mensaje =
+`📢 ORDEN DE TRABAJO
+
+OT: ${numeroOT}
+Reclamo: ${numero}
+Barrio: ${d.barrio || ""}
+
+Área: ${ev.area}
+Acción: ${ev.accion}
+Prioridad: ${ev.prioridad}
+Material: ${ev.material}
+Circular: ${ev.circular ? "Sí" : "No"}
+
+Detalle:
+${d.desc || ""}
+
+Ubicación:
+${mapa}`;
+
+    const telefono = "5492223123456";
+    window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`,"_blank");
+  }catch(e){
+    console.error(e);
+    alert("Error al enviar al municipio");
+  }
+}
+
+function generarResumenIA(){
+  if(dataGlobal.length === 0){
+    alert("No hay datos");
+    return;
+  }
+
+  const barrio = document.getElementById("filtroBarrio").value;
+  let tipos = {};
+  let estados = {pendiente:0,en_proceso:0,resuelto:0};
+
+  dataGlobal.forEach(d=>{
+    tipos[d.tipo] = (tipos[d.tipo] || 0) + 1;
+    estados[d.estado || "pendiente"]++;
+  });
+
+  let principal = "Ninguno";
+  let max = 0;
+  for(const t in tipos){
+    if(tipos[t] > max){
+      max = tipos[t];
+      principal = t;
+    }
+  }
+
+  const resumen = `
+📍 Zona: ${barrio}
+
+📊 Total: ${dataGlobal.length}
+⚠️ Problemática principal: ${principal}
+
+📌 Estados:
+- Pendientes: ${estados.pendiente}
+- En proceso: ${estados.en_proceso}
+- Resueltos: ${estados.resuelto}
+
+💡 Acción sugerida:
+Priorizar ${principal} y operativos territoriales en la zona.
+  `.trim();
+
+  document.getElementById("iaContenido").innerText = resumen;
+  document.getElementById("iaPanel").style.display = "block";
+}
+
+function toggleInforme(){
+  const panel = document.getElementById("informePanel");
+  panel.style.display = panel.style.display === "block" ? "none" : "block";
+
+  let html = "<table border='1' width='100%' cellpadding='6' cellspacing='0'><tr><th>N°</th><th>Tipo</th><th>Barrio</th><th>Estado</th></tr>";
+  dataGlobal.forEach(d=>{
+    const numero = d.numero || ("REC-" + d.id.slice(0,4).toUpperCase());
+    html += `<tr><td>${numero}</td><td>${d.tipo || ""}</td><td>${d.barrio || ""}</td><td>${d.estado || "pendiente"}</td></tr>`;
+  });
+  html += "</table>";
+  document.getElementById("informeContenido").innerHTML = html;
+}
+
+function exportarExcel(){
+  let csv = "Numero,Tipo,Barrio,Estado,Descripcion\n";
+  dataGlobal.forEach(d=>{
+    const numero = d.numero || ("REC-" + d.id.slice(0,4).toUpperCase());
+    const desc = (d.desc || "").replace(/,/g," ");
+    csv += `${numero},${d.tipo || ""},${d.barrio || ""},${d.estado || "pendiente"},${desc}\n`;
+  });
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+  a.download = "reclamos.csv";
+  a.click();
+}
+
+function exportarPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 10;
+
+  doc.setFontSize(14);
+  doc.text("Informe general de reclamos",10,y);
+  y += 10;
+  doc.setFontSize(10);
+
+  dataGlobal.forEach(d=>{
+    const numero = d.numero || ("REC-" + d.id.slice(0,4).toUpperCase());
+    const linea = `${numero} - ${d.tipo || ""} - ${d.barrio || ""} - ${d.estado || "pendiente"}`;
+    doc.text(linea,10,y);
+    y += 6;
+    if(y > 280){
+      doc.addPage();
+      y = 10;
+    }
+  });
+
+  doc.save("reclamos.pdf");
+}
+
+async function abrirCircular(){
+  document.getElementById("panelCircular").style.display = "block";
+  document.getElementById("dashboardCircular").innerHTML = "Analizando reclamos y fotos...";
+  document.getElementById("analisisIA").innerHTML = "";
+
+  if(graficoCircularRef){
+    graficoCircularRef.destroy();
+    graficoCircularRef = null;
+  }
+
+  if(dataGlobal.length === 0){
+    document.getElementById("dashboardCircular").innerHTML = "No hay reclamos para analizar.";
+    return;
+  }
+
+  const evaluados = await Promise.all(dataGlobal.map(evaluarReclamoInteligente));
+
+  let conteo = {
+    plastico:0,
+    vidrio:0,
+    madera:0,
+    electronico:0,
+    ramas:0,
+    carton:0,
+    noCircular:0,
+    criticos:0
+  };
+
+  let barrios = {};
+  let detalle = [];
+
+  dataGlobal.forEach((d,i)=>{
+    const ev = evaluados[i];
+    const mat = ev.material;
+
+    if(mat === "Plástico") conteo.plastico++;
+    else if(mat === "Vidrio") conteo.vidrio++;
+    else if(mat === "Madera") conteo.madera++;
+    else if(mat === "Electrónico") conteo.electronico++;
+    else if(mat === "Ramas") conteo.ramas++;
+    else if(mat === "Cartón") conteo.carton++;
+    else conteo.noCircular++;
+
+    if(ev.prioridad === "Alta") conteo.criticos++;
+
+    barrios[d.barrio || "Sin barrio"] = (barrios[d.barrio || "Sin barrio"] || 0) + 1;
+
+    const numero = d.numero || ("REC-" + d.id.slice(0,4).toUpperCase());
+    detalle.push({
+      numero,
+      barrio:d.barrio || "",
+      material:ev.material,
+      circular:ev.circular,
+      area:ev.area,
+      accion:ev.accion,
+      prioridad:ev.prioridad
+    });
+  });
+
+  const totalCircular = conteo.plastico + conteo.vidrio + conteo.madera + conteo.electronico + conteo.ramas + conteo.carton;
+  const impactoCO2 = totalCircular * 2;
+  const ahorro = totalCircular * 50;
+
+  let peorBarrio = "Sin datos";
+  let peorValor = 0;
+  for(const b in barrios){
+    if(barrios[b] > peorValor){
+      peorValor = barrios[b];
+      peorBarrio = b;
+    }
+  }
+
+  document.getElementById("dashboardCircular").innerHTML = `
+    <div class="panelGrid">
+      <div class="box green">♻️ Circulares<br><b>${totalCircular}</b></div>
+      <div class="box red">⚠️ Críticos<br><b>${conteo.criticos}</b></div>
+      <div class="box blue">🌱 CO₂ evitado<br><b>${impactoCO2} kg</b></div>
+      <div class="box dark">💰 Ahorro estimado<br><b>$${ahorro}</b></div>
+      <div class="box orange">🪵 Madera / Ramas<br><b>${conteo.madera + conteo.ramas}</b></div>
+      <div class="box blue">🧴 Plástico / Vidrio<br><b>${conteo.plastico + conteo.vidrio}</b></div>
+    </div>
+  `;
+
+  const ctx = document.getElementById("graficoCircular").getContext("2d");
+  graficoCircularRef = new Chart(ctx,{
+    type:"doughnut",
+    data:{
+      labels:["Plástico","Vidrio","Madera","Electrónico","Ramas","No circular"],
+      datasets:[{
+        data:[
+          conteo.plastico,
+          conteo.vidrio,
+          conteo.madera,
+          conteo.electronico,
+          conteo.ramas,
+          conteo.noCircular
+        ]
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:"bottom"}}
+    }
+  });
+
+  let html = `
+    <h3>🧠 Diagnóstico</h3>
+    Barrio con más reclamos: <b>${peorBarrio}</b><br>
+    Total circular detectado: <b>${totalCircular}</b><br>
+    Se recomienda priorizar operativos y retiros diferenciados en la zona crítica.
+    <br><br>
+    <h3>Detalle operativo</h3>
+  `;
+
+  detalle.slice(0,50).forEach(item=>{
+    html += `
+      <div class="actionBox">
+        <b>${item.numero}</b> - ${item.barrio}<br>
+        ♻️ ${item.material} | Circular: <b>${item.circular ? "Sí" : "No"}</b><br>
+        🏛 Área: <b>${item.area}</b><br>
+        🛠 Acción: <b>${item.accion}</b><br>
+        ⚠️ Prioridad: <b>${item.prioridad}</b>
+      </div>
+    `;
+  });
+
+  document.getElementById("analisisIA").innerHTML = html;
+
+  ultimoInformeCircular = {
+    totalCircular,
+    impactoCO2,
+    ahorro,
+    peorBarrio,
+    detalle
+  };
+}
+
+function cerrarCircular(){
+  document.getElementById("panelCircular").style.display = "none";
+}
+
+function exportarInformePDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(14);
+  doc.text("Informe Economía Circular - Brandsen",10,12);
+  doc.setFontSize(10);
+
+  if(!ultimoInformeCircular){
+    doc.text("Abrí primero el panel de Economía Circular para generar datos reales.",10,24);
+    doc.save("informe_circular_brandsen.pdf");
+    return;
+  }
+
+  let y = 24;
+  doc.text(`Total circular: ${ultimoInformeCircular.totalCircular}`,10,y); y += 6;
+  doc.text(`CO2 evitado: ${ultimoInformeCircular.impactoCO2} kg`,10,y); y += 6;
+  doc.text(`Ahorro estimado: $${ultimoInformeCircular.ahorro}`,10,y); y += 6;
+  doc.text(`Barrio crítico: ${ultimoInformeCircular.peorBarrio}`,10,y); y += 10;
+
+  ultimoInformeCircular.detalle.slice(0,25).forEach(item=>{
+    const linea = `${item.numero} | ${item.material} | ${item.area} | ${item.prioridad}`;
+    doc.text(linea,10,y);
+    y += 6;
+    if(y > 280){
+      doc.addPage();
+      y = 10;
+    }
+  });
+
+  doc.save("informe_circular_brandsen.pdf");
+}
+
+async function analizarIAPro(){
+  if(dataGlobal.length === 0){
+    alert("No hay reclamos cargados");
+    return;
+  }
+
+  document.getElementById("panelIAPro").style.display = "block";
+  document.getElementById("resultadoIA").innerHTML = "Analizando fotos y texto...";
+
+  const evaluados = await Promise.all(dataGlobal.map(evaluarReclamoInteligente));
+
+  let html = "";
+  dataGlobal.forEach((d,i)=>{
+    const ev = evaluados[i];
+    const numero = d.numero || ("REC-" + d.id.slice(0,4).toUpperCase());
+    html += `
+      <div class="actionBox">
+        <b>${numero}</b> - ${d.tipo || ""} - ${d.barrio || ""}<br>
+        🧠 Material: <b>${ev.material}</b><br>
+        ♻️ Circular: <b>${ev.circular ? "Sí" : "No"}</b><br>
+        🏛 Área: <b>${ev.area}</b><br>
+        ⚠️ Prioridad: <b>${ev.prioridad}</b><br>
+        🛠 Acción: <b>${ev.accion}</b><br>
+        <span class="small">Origen detección: ${ev.origen}</span>
+      </div>
+    `;
+  });
+
+  document.getElementById("resultadoIA").innerHTML = html;
+}
+
+function cerrarIAPro(){
+  document.getElementById("panelIAPro").style.display = "none";
+}
+
+/* ======================================================
+   GESTIÓN DE RESIDUOS / RECUPERADORES CIRCULARES
+   Firebase:
+   - recuperadores_circulares
+   - solicitudes_circulares
+   ====================================================== */
+
+let unsubscribeRecuperadores = null;
+let unsubscribeSolicitudesCirculares = null;
+let recuperadoresPanelCache = [];
+
+function normalizarTelefonoAR(input){
+  let numero = String(input || "").replace(/\D/g,"");
+  if(!numero) return "";
+  if(numero.startsWith("549")) return numero;
+  if(numero.startsWith("54")) return "549" + numero.slice(2);
+  if(numero.startsWith("0")) numero = numero.slice(1);
+  return "549" + numero;
+}
+
+function abrirGestionResiduos(){
+  document.getElementById("panelResiduos").style.display = "block";
+  mostrarGestionResiduos("recuperadores");
+  cargarRecuperadoresCirculares();
+  cargarSolicitudesCircularesPanel();
+  cargarRecursosIAPanel();
+}
+
+function cerrarGestionResiduos(){
+  document.getElementById("panelResiduos").style.display = "none";
+}
+
+function mostrarGestionResiduos(tab){
+  document.getElementById("tabRecuperadores").classList.remove("active");
+  document.getElementById("tabSolicitudes").classList.remove("active");
+  document.getElementById("tabRecursosIA").classList.remove("active");
+
+  document.getElementById("viewRecuperadores").style.display = "none";
+  document.getElementById("viewSolicitudes").style.display = "none";
+  document.getElementById("viewRecursosIA").style.display = "none";
+
+  if(tab === "recuperadores"){
+    document.getElementById("tabRecuperadores").classList.add("active");
+    document.getElementById("viewRecuperadores").style.display = "block";
+  }
+
+  if(tab === "solicitudes"){
+    document.getElementById("tabSolicitudes").classList.add("active");
+    document.getElementById("viewSolicitudes").style.display = "block";
+    cargarSolicitudesCircularesPanel();
+  }
+
+  if(tab === "recursos"){
+    document.getElementById("tabRecursosIA").classList.add("active");
+    document.getElementById("viewRecursosIA").style.display = "block";
+    cargarRecursosIAPanel();
+  }
+}
+
+async function guardarRecuperadorCircular(){
+  try{
+    const id = document.getElementById("recuperadorId").value.trim();
+
+    const nombre = document.getElementById("recNombre").value.trim();
+    const categoria = document.getElementById("recCategoria").value;
+    const rubro = document.getElementById("recRubro").value.trim();
+    const zona = document.getElementById("recZona").value.trim();
+    const telefonoRaw = document.getElementById("recTelefono").value.trim();
+    const activo = document.getElementById("recActivo").value === "true";
+    const prioridad = Number(document.getElementById("recPrioridad").value || 1);
+    const notas = document.getElementById("recNotas").value.trim();
+
+    if(!nombre){
+      alert("Cargá el nombre del recuperador circular.");
+      return;
+    }
+
+    const data = {
+      nombre,
+      categoria,
+      rubro,
+      zona,
+      telefono: normalizarTelefonoAR(telefonoRaw),
+      telefonoVisible:false,
+      activo,
+      prioridad,
+      notas,
+      actualizado:new Date()
+    };
+
+    if(id){
+      await db.collection("recuperadores_circulares").doc(id).update(data);
+      alert("Recuperador actualizado ✅");
+    }else{
+      data.creado = new Date();
+      await db.collection("recuperadores_circulares").add(data);
+      alert("Recuperador cargado ✅");
+    }
+
+    limpiarFormRecuperador();
+    cargarRecuperadoresCirculares();
+
+  }catch(e){
+    console.error(e);
+    alert("Error al guardar recuperador: " + e.message);
+  }
+}
+
+function limpiarFormRecuperador(){
+  document.getElementById("recuperadorId").value = "";
+  document.getElementById("recNombre").value = "";
+  document.getElementById("recCategoria").value = "madera";
+  document.getElementById("recRubro").value = "";
+  document.getElementById("recZona").value = "";
+  document.getElementById("recTelefono").value = "";
+  document.getElementById("recActivo").value = "true";
+  document.getElementById("recPrioridad").value = "1";
+  document.getElementById("recNotas").value = "";
+}
+
+function cargarRecuperadoresCirculares(){
+  if(unsubscribeRecuperadores){
+    unsubscribeRecuperadores();
+    unsubscribeRecuperadores = null;
+  }
+
+  unsubscribeRecuperadores = db.collection("recuperadores_circulares")
+    .orderBy("prioridad","asc")
+    .onSnapshot(snap=>{
+      recuperadoresPanelCache = [];
+      const cont = document.getElementById("listaRecuperadoresPanel");
+      cont.innerHTML = "";
+
+      if(snap.empty){
+        cont.innerHTML = `
+          <div class="recCard">
+            <h3>Sin recuperadores cargados</h3>
+            <p>Agregá personas o empresas desde el formulario de arriba.</p>
+          </div>
+        `;
+        return;
+      }
+
+      snap.forEach(doc=>{
+        const r = {id:doc.id, ...doc.data()};
+        recuperadoresPanelCache.push(r);
+
+        const estadoBadge = r.activo
+          ? `<span class="badgeActivo">Activo</span>`
+          : `<span class="badgePausado">Pausado</span>`;
+
+        const div = document.createElement("div");
+        div.className = "recCard";
+        div.innerHTML = `
+          <h3>${r.nombre || "Sin nombre"} ${estadoBadge}</h3>
+          <p><b>Categoría:</b> ${labelCategoriaCircular(r.categoria)}</p>
+          <p><b>Rubro:</b> ${r.rubro || ""}</p>
+          <p><b>Zona:</b> ${r.zona || ""}</p>
+          <p><b>Prioridad:</b> ${r.prioridad || 1}</p>
+          <p><b>Teléfono interno:</b> ${r.telefono ? "Cargado / oculto al vecino" : "Sin teléfono"}</p>
+          <p class="small"><b>Notas:</b> ${r.notas || ""}</p>
+
+          <div class="recActions">
+            <button onclick="editarRecuperadorCircular('${r.id}')">Editar</button>
+            <button onclick="toggleActivoRecuperador('${r.id}', ${r.activo ? "false" : "true"})">
+              ${r.activo ? "Pausar" : "Activar"}
+            </button>
+            <button onclick="eliminarRecuperadorCircular('${r.id}')" style="background:#dc2626;color:white;">Eliminar</button>
+            <button onclick="probarWhatsAppRecuperador('${r.id}')" style="background:#16a34a;color:white;">Probar derivación</button>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    },err=>{
+      console.error(err);
+      document.getElementById("listaRecuperadoresPanel").innerHTML =
+        `<div class="recCard">Error cargando recuperadores: ${err.message}</div>`;
+    });
+}
+
+function labelCategoriaCircular(cat){
+  const map = {
+    madera:"Madera / muebles",
+    plastico:"Plástico / envases",
+    electronica:"Electrónica / RAEE",
+    poda:"Ramas / poda",
+    metal:"Metal / caños",
+    carton:"Cartón / papel",
+    obra:"Materiales de obra",
+    general:"General / a revisar"
+  };
+  return map[cat] || cat || "General";
+}
+
+function editarRecuperadorCircular(id){
+  const r = recuperadoresPanelCache.find(x=>x.id === id);
+  if(!r){
+    alert("No encontré el recuperador.");
+    return;
+  }
+
+  document.getElementById("recuperadorId").value = r.id;
+  document.getElementById("recNombre").value = r.nombre || "";
+  document.getElementById("recCategoria").value = r.categoria || "general";
+  document.getElementById("recRubro").value = r.rubro || "";
+  document.getElementById("recZona").value = r.zona || "";
+  document.getElementById("recTelefono").value = r.telefono || "";
+  document.getElementById("recActivo").value = String(r.activo !== false);
+  document.getElementById("recPrioridad").value = r.prioridad || 1;
+  document.getElementById("recNotas").value = r.notas || "";
+
+  mostrarGestionResiduos("recuperadores");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+async function toggleActivoRecuperador(id, activo){
+  try{
+    await db.collection("recuperadores_circulares").doc(id).update({
+      activo,
+      actualizado:new Date()
+    });
+  }catch(e){
+    console.error(e);
+    alert("Error cambiando estado: " + e.message);
+  }
+}
+
+async function eliminarRecuperadorCircular(id){
+  if(!confirm("¿Eliminar recuperador circular?")) return;
+  try{
+    await db.collection("recuperadores_circulares").doc(id).delete();
+  }catch(e){
+    console.error(e);
+    alert("Error eliminando: " + e.message);
+  }
+}
+
+function probarWhatsAppRecuperador(id){
+  const r = recuperadoresPanelCache.find(x=>x.id === id);
+  if(!r){
+    alert("No encontré el recuperador.");
+    return;
+  }
+
+  if(!r.telefono){
+    alert("Este recuperador no tiene teléfono interno cargado.");
+    return;
+  }
+
+  const mensaje =
+`Prueba de derivación BrandsenCircular
+
+Recuperador circular: ${r.nombre}
+Categoría: ${labelCategoriaCircular(r.categoria)}
+Rubro: ${r.rubro || ""}
+Zona: ${r.zona || ""}
+
+Mensaje interno de prueba del panel administrador.`;
+
+  window.open(`https://wa.me/${r.telefono}?text=${encodeURIComponent(mensaje)}`,"_blank");
+}
+
+function categoriaDesdeMaterialCircular(material){
+  const m = normalizar(material || "");
+  if(m.includes("madera") || m.includes("rama")) return m.includes("rama") ? "poda" : "madera";
+  if(m.includes("plastico") || m.includes("plástico") || m.includes("vidrio")) return "plastico";
+  if(m.includes("electronico") || m.includes("electrónico") || m.includes("raee")) return "electronica";
+  if(m.includes("carton") || m.includes("cartón")) return "carton";
+  if(m.includes("metal")) return "metal";
+  return "general";
+}
+
+async function cargarSolicitudesCircularesPanel(){
+  const cont = document.getElementById("listaSolicitudesCirculares");
+  if(!cont) return;
+
+  cont.innerHTML = "Cargando solicitudes...";
+
+  try{
+    const snap = await db.collection("solicitudes_circulares")
+      .orderBy("fecha","desc")
+      .limit(40)
+      .get();
+
+    if(snap.empty){
+      cont.innerHTML = `
+        <div class="solicitudCircular">
+          Todavía no hay solicitudes circulares. Cuando desde la página pública toquen
+          “Solicitar revisión”, aparecerán acá.
+        </div>
+      `;
+      return;
+    }
+
+    cont.innerHTML = "";
+
+    snap.forEach(doc=>{
+      const s = {id:doc.id, ...doc.data()};
+      const div = document.createElement("div");
+      div.className = "solicitudCircular";
+
+      div.innerHTML = `
+        <b>${s.categoria || s.material || "Solicitud circular"}</b><br>
+        Estado: <b>${s.estado || "pendiente_admin"}</b><br>
+        Barrio: ${s.barrio || ""}<br>
+        Detalle: ${s.detalle || s.desc || ""}<br>
+        Ubicación: ${s.ubicacion ? `<a href="${s.ubicacion}" target="_blank">Abrir mapa</a>` : "No informada"}<br>
+        Recuperador sugerido: <b>${s.recuperadorNombre || s.reutilizadorSugerido || "A revisar"}</b>
+
+        <div class="recActions">
+          <select id="asignar_${s.id}">
+            <option value="">Asignar recuperador...</option>
+            ${recuperadoresPanelCache
+              .filter(r=>r.activo !== false)
+              .map(r=>`<option value="${r.id}">${r.nombre} - ${labelCategoriaCircular(r.categoria)}</option>`)
+              .join("")}
+          </select>
+          <button onclick="asignarRecuperadorSolicitud('${s.id}')">Asignar</button>
+          <button onclick="actualizarEstadoSolicitudCircular('${s.id}','en_revision')" style="background:#2563eb;color:white;">En revisión</button>
+          <button onclick="actualizarEstadoSolicitudCircular('${s.id}','resuelto')" style="background:#16a34a;color:white;">Resuelto</button>
+        </div>
+      `;
+
+      cont.appendChild(div);
+    });
+
+  }catch(e){
+    console.error(e);
+    cont.innerHTML = `<div class="solicitudCircular">Error cargando solicitudes: ${e.message}</div>`;
+  }
+}
+
+async function actualizarEstadoSolicitudCircular(id, estado){
+  try{
+    await db.collection("solicitudes_circulares").doc(id).update({
+      estado,
+      actualizado:new Date()
+    });
+    cargarSolicitudesCircularesPanel();
+  }catch(e){
+    console.error(e);
+    alert("Error actualizando solicitud: " + e.message);
+  }
+}
+
+async function asignarRecuperadorSolicitud(id){
+  try{
+    const select = document.getElementById("asignar_" + id);
+    const recuperadorId = select.value;
+    if(!recuperadorId){
+      alert("Elegí un recuperador.");
+      return;
+    }
+
+    const r = recuperadoresPanelCache.find(x=>x.id === recuperadorId);
+    if(!r){
+      alert("No encontré el recuperador.");
+      return;
+    }
+
+    await db.collection("solicitudes_circulares").doc(id).update({
+      recuperadorId:r.id,
+      recuperadorNombre:r.nombre,
+      recuperadorCategoria:r.categoria,
+      estado:"asignado",
+      actualizado:new Date()
+    });
+
+    alert("Solicitud asignada ✅");
+    cargarSolicitudesCircularesPanel();
+
+  }catch(e){
+    console.error(e);
+    alert("Error asignando recuperador: " + e.message);
+  }
+}
+
+async function cargarRecursosIAPanel(){
+  const cont = document.getElementById("listaRecursosIAPanel");
+  if(!cont) return;
+
+  if(dataGlobal.length === 0){
+    cont.innerHTML = `
+      <div class="recCard">
+        No hay reclamos cargados. Tocá “Actualizar” primero o elegí otro barrio.
+      </div>
+    `;
+    return;
+  }
+
+  cont.innerHTML = "Analizando recursos...";
+
+  try{
+    const evaluados = await Promise.all(dataGlobal.map(evaluarReclamoInteligente));
+    cont.innerHTML = "";
+
+    let encontrados = 0;
+
+    dataGlobal.forEach((d,i)=>{
+      const ev = evaluados[i];
+      if(!ev.circular) return;
+
+      encontrados++;
+      const numero = d.numero || ("REC-" + d.id.slice(0,4).toUpperCase());
+      const categoria = categoriaDesdeMaterialCircular(ev.material);
+
+      const div = document.createElement("div");
+      div.className = "recCard";
+      div.innerHTML = `
+        <h3>${numero} - ${ev.material}</h3>
+        <p><b>Barrio:</b> ${d.barrio || ""}</p>
+        <p><b>Detalle:</b> ${d.desc || ""}</p>
+        <p><b>Categoría sugerida:</b> ${labelCategoriaCircular(categoria)}</p>
+        <p><b>Acción IA:</b> ${ev.accion}</p>
+
+        <div class="recActions">
+          <button onclick="crearSolicitudCircularDesdeReclamo('${d.id}','${categoria}')" style="background:#16a34a;color:white;">
+            Crear solicitud circular
+          </button>
+          <button onclick="generarOrden('${d.id}')">Generar orden</button>
+          <a class="btnLink" href="https://www.google.com/maps?q=${d.lat},${d.lng}" target="_blank">Mapa</a>
+        </div>
+      `;
+      cont.appendChild(div);
+    });
+
+    if(encontrados === 0){
+      cont.innerHTML = `<div class="recCard">No hay recursos circulares detectados por IA en el filtro actual.</div>`;
+    }
+
+  }catch(e){
+    console.error(e);
+    cont.innerHTML = `<div class="recCard">Error analizando recursos: ${e.message}</div>`;
+  }
+}
+
+async function crearSolicitudCircularDesdeReclamo(id, categoria){
+  try{
+    const docRef = await db.collection("reclamos").doc(id).get();
+    const d = docRef.data();
+    if(!d){
+      alert("No encontré el reclamo.");
+      return;
+    }
+
+    const ev = await evaluarReclamoInteligente(d);
+    const ubicacion = d.lat && d.lng ? `https://www.google.com/maps?q=${d.lat},${d.lng}` : "";
+
+    await db.collection("solicitudes_circulares").add({
+      reclamoId:id,
+      categoria:labelCategoriaCircular(categoria),
+      categoriaKey:categoria,
+      material:ev.material,
+      barrio:d.barrio || "",
+      detalle:d.desc || "",
+      ubicacion,
+      estado:"pendiente_admin",
+      origen:"panel_ia",
+      fecha:new Date()
+    });
+
+    alert("Solicitud circular creada ✅");
+    mostrarGestionResiduos("solicitudes");
+
+  }catch(e){
+    console.error(e);
+    alert("Error creando solicitud circular: " + e.message);
+  }
+}
+
+/* Carga inicial silenciosa para que el selector de solicitudes tenga recuperadores */
+setTimeout(()=>{
+  try{
+    cargarRecuperadoresCirculares();
+  }catch(e){
+    console.log("Recuperadores pendientes de cargar:", e.message);
+  }
+},1200);
+
+</script>
+
+</body>
+</html>

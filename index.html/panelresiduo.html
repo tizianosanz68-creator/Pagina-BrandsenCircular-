@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Brandsen Circular - Mapa Vecinal Inteligente</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<style>
+:root{--azul:#2563eb;--azul2:#1e3a8a;--verde:#16a34a;--gris:#6b7280;--rojo:#dc2626;--amarillo:#f59e0b;--blanco:#fff;--sombra:0 12px 30px rgba(0,0,0,.18)}
+*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Arial,sans-serif;background:#f3f6fb;overflow:hidden}#map{position:absolute;inset:0}
+button,input,select,textarea{font:inherit;border:none;outline:none;border-radius:12px}button{cursor:pointer}
+#pantallaLogin,#pantallaBarrio{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10000}.boxCenter{width:min(92vw,370px);background:#fff;border-radius:22px;padding:26px;box-shadow:0 24px 50px rgba(0,0,0,.22);text-align:center}#pantallaLogin{background:linear-gradient(135deg,var(--azul),var(--azul2))}#pantallaBarrio{background:rgba(255,255,255,.98);display:none}
+.primaryBtn{width:100%;padding:12px 14px;background:var(--azul);color:#fff;font-weight:700;margin-top:12px}.secondaryBtn{width:100%;padding:12px 14px;background:#6b7280;color:#fff;font-weight:700;margin-top:10px}.field{width:100%;padding:12px 14px;background:#eef2f7;margin-top:10px;color:#111827}.helper{font-size:12px;color:#6b7280;line-height:1.45;margin-top:8px}
+.menuBoton,.cambiarBarrio,.btnCircular,.botonCrear{position:fixed;z-index:6000;box-shadow:var(--sombra)}.menuBoton{top:18px;left:16px;width:52px;height:52px;font-size:22px;background:#fff}.cambiarBarrio{top:18px;right:16px;background:var(--azul);color:#fff;padding:12px 14px;font-weight:700}.btnCircular{top:82px;right:16px;background:var(--verde);color:#fff;padding:10px 12px;font-weight:700}.botonCrear{bottom:20px;right:20px;width:72px;height:72px;border-radius:50%;background:var(--azul);color:#fff;font-size:34px}
+#menuStats{position:fixed;top:82px;left:16px;width:min(92vw,350px);background:#fff;padding:16px;border-radius:16px;display:none;z-index:6000;box-shadow:var(--sombra)}.statsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}.statMini{background:#eff6ff;border-radius:12px;padding:10px;font-size:13px;font-weight:700;color:#1f2937}.legendRow{font-size:13px;color:#374151;line-height:1.5}
+#panelCircular{position:fixed;right:16px;bottom:106px;width:min(94vw,360px);background:#fff;padding:16px;border-radius:18px;display:none;z-index:6200;box-shadow:var(--sombra)}.miniCircularItem{background:#f8fafc;border-radius:12px;padding:10px;margin-top:8px;font-size:13px}
+#formModal{position:fixed;left:0;right:0;bottom:0;background:#fff;padding:18px;border-radius:22px 22px 0 0;transform:translateY(100%);transition:.32s ease;z-index:5000;max-height:90vh;overflow:auto;box-shadow:0 -18px 35px rgba(0,0,0,.16)}.formSection{background:#f8fafc;border:1px solid #e5e7eb;padding:12px;border-radius:14px;margin-top:12px}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formTitle{display:flex;justify-content:space-between;align-items:center;gap:10px}.closeMini{background:#eef2f7;padding:8px 12px}.checkRow{display:block;margin-top:10px;color:#111827;font-size:14px}
+.guiaCentro{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3000;pointer-events:none}.guiaCentro div{width:22px;height:22px;background:var(--azul);border-radius:50%;border:3px solid white;box-shadow:0 0 0 6px rgba(37,99,235,.18)}.firma{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);font-size:12px;color:white;background:rgba(0,0,0,.45);padding:6px 12px;border-radius:20px;z-index:7000}
+.markerCustom{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;border:3px solid white;box-shadow:0 8px 16px rgba(0,0,0,.2)}.basura{background:#16a34a}.calle{background:#6b7280}.luz{background:#facc15;color:#111827}.cloaca{background:#3b82f6}.otros{background:#8b5cf6}.usuario{background:#2563eb}.circular{background:#10b981}.critico{background:#dc2626}
+.popupBox{font-size:14px;line-height:1.5;max-width:280px}.popupBox img{width:100%;border-radius:10px;margin-top:8px;max-height:180px;object-fit:cover}.popupGroup{background:#f8fafc;border-radius:12px;padding:10px;margin-top:8px}.badgeCircular{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;margin:4px 4px 0 0}.ok{background:#dcfce7;color:#166534}.no{background:#e5e7eb;color:#374151}.alerta{background:#fee2e2;color:#991b1b}.estado{padding:5px 10px;border-radius:8px;color:white;font-size:12px;display:inline-block;margin-bottom:6px}.pendiente{background:#f59e0b}.proceso{background:#2563eb}.resuelto{background:#16a34a}
+#barraCarga{display:none;margin-top:10px}#barraCargaWrap{background:#e5e7eb;border-radius:10px;overflow:hidden}#progreso{height:10px;width:0%;background:var(--azul)}#textoProgreso{display:block;margin-top:6px;color:#4b5563}
+@media (max-width:780px){.cambiarBarrio{top:18px;right:14px;padding:10px 12px;font-size:13px}.btnCircular{top:74px;right:14px;padding:10px 12px;font-size:13px}.menuBoton{top:18px;left:14px}.menuStats{left:14px;top:82px;width:calc(100vw - 28px)}.botonCrear{right:18px;bottom:18px;width:68px;height:68px}.formGrid{grid-template-columns:1fr}.firma{bottom:88px}#panelCircular{right:14px;left:14px;bottom:100px;width:auto}}
+</style>
+</head>
+<body>
+<div class="guiaCentro"><div></div></div>
+<div class="firma">Created by Tiziano Sanz</div>
+
+<div id="pantallaBarrio">
+  <div class="boxCenter">
+    <h3>Elegí tu barrio</h3>
+    <p style="color:#4b5563;line-height:1.5">Primero elegís la zona para ver reclamos locales y cargar reportes de tu barrio.</p>
+    <select id="barrio" class="field">
+      <option>Radio centrico</option><option>Barrio republica</option><option>Los pinos</option><option>Las higueras</option><option>El soñado</option><option>El matadero</option><option>Retama</option><option>La manzana</option><option>La rural</option><option>La dolly 1</option><option>La dolly 2</option><option>Las americas</option><option>La parada</option><option>Bajo belgrano</option><option>Los naranjos</option><option>I.isabel</option><option>Las mandarinas</option><option>Jeppener</option><option>Altamirano</option><option>Los bosquecitos</option><option>Gomez</option><option>Las golondrinas</option><option>Las acacias</option>
+    </select>
+    <button class="primaryBtn" onclick="guardarBarrio()">Entrar</button>
+  </div>
+</div>
+
+<button class="menuBoton" onclick="toggleMenu()">☰</button>
+<button class="cambiarBarrio" onclick="cambiarBarrio()">Cambiar barrio</button>
+<button class="btnCircular" onclick="toggleCircularPanel()">♻️ Circular</button>
+<button class="botonCrear" onclick="abrirForm()">+</button>
+
+<div id="menuStats">
+  <h3 style="margin:0 0 10px">Estadísticas del barrio</h3>
+  <div class="statsGrid">
+    <div class="statMini">Total: <span id="total">0</span></div>
+    <div class="statMini">Basura: <span id="basura">0</span></div>
+    <div class="statMini">Calle: <span id="calle">0</span></div>
+    <div class="statMini">Luminaria: <span id="luz">0</span></div>
+    <div class="statMini">Cloacas: <span id="cloaca">0</span></div>
+    <div class="statMini">Otros: <span id="otros">0</span></div>
+  </div>
+  <h4 style="margin:10px 0">Economía circular</h4>
+  <div class="statsGrid">
+    <div class="statMini">Recuperables: <span id="totalCircular">0</span></div>
+    <div class="statMini">Críticos: <span id="totalCriticos">0</span></div>
+    <div class="statMini">Madera/Muebles: <span id="maderaCircular">0</span></div>
+    <div class="statMini">Ramas/Poda: <span id="organicoCircular">0</span></div>
+    <div class="statMini">Plástico/Vidrio: <span id="reciclablesSecos">0</span></div>
+    <div class="statMini">RAEE/Metal: <span id="especialesCircular">0</span></div>
+  </div>
+  <div class="legendRow">🔴 Crítico / urgente<br>🟢 Circular / recuperable<br>⚪ Normal / no recuperable</div>
+</div>
+
+<div id="panelCircular">
+  <h3 style="margin:0 0 8px">Resumen circular del barrio</h3>
+  <div class="miniCircularItem">Materiales aprovechables detectados: <b id="resCircularAprovechable">0</b></div>
+  <div class="miniCircularItem">Reclamos con potencial alto: <b id="resCircularAlto">0</b></div>
+  <div class="miniCircularItem">Posible ahorro operativo estimado: <b id="resAhorro">$0</b></div>
+  <div class="miniCircularItem">CO₂ evitado estimado: <b id="resCO2">0 kg</b></div>
+</div>
+
+<div id="formModal">
+  <div class="formTitle">
+    <h3 style="margin:0">Nuevo reclamo / recurso</h3>
+    <button class="closeMini" onclick="cerrarForm()">Cerrar</button>
+  </div>
+
+  <div class="formSection">
+    <h4 style="margin:0 0 8px">Ubicación</h4>
+    <div class="helper">La ubicación se toma del centro del mapa para marcar el punto exacto del reclamo.</div>
+  </div>
+
+  <div class="formSection">
+    <h4 style="margin:0 0 8px">Datos principales</h4>
+    <div class="formGrid">
+      <select id="tipo" class="field">
+        <option>Basura</option><option>Calle</option><option>Luminaria</option><option>Cloacas</option><option>Otros</option><option>Ramas / Poda</option><option>Barrido</option><option>Zanjeo</option><option>Zona verde</option>
+      </select>
+      <select id="prioridadVecinal" class="field">
+        <option value="normal">Prioridad normal</option><option value="alta">Prioridad alta</option><option value="critica">Prioridad crítica</option>
+      </select>
+    </div>
+    <textarea id="desc" class="field" style="min-height:100px;resize:none" placeholder="Descripción del reclamo o recurso"></textarea>
+    <button class="primaryBtn" style="background:#0f766e" onclick="hablar()">🎤 Dictar</button>
+    <input type="file" id="foto" accept="image/*" class="field">
+    <div id="barraCarga"><div id="barraCargaWrap"><div id="progreso"></div></div><small id="textoProgreso">Subiendo 0%</small></div>
+  </div>
+
+  <div class="formSection">
+    <h4 style="margin:0 0 8px">Participación en economía circular</h4>
+    <div class="helper">El vecino puede informar si ese material puede recuperarse o transformarse en recurso.</div>
+    <label class="checkRow"><input type="checkbox" id="esCircular" style="width:auto;margin-right:8px;vertical-align:middle">Puede aprovecharse / recuperarse</label>
+    <div class="formGrid">
+      <select id="materialCircular" class="field">
+        <option value="">Material observado</option><option value="madera">Madera / muebles</option><option value="ramas">Ramas / poda</option><option value="pallet">Pallets</option><option value="plastico">Plástico</option><option value="vidrio">Vidrio</option><option value="carton">Cartón / papel</option><option value="metal">Metal / chatarra</option><option value="electronico">Electrónico / RAEE</option><option value="escombro">Escombro reutilizable</option><option value="otro">Otro</option>
+      </select>
+      <select id="destinoSugerido" class="field">
+        <option value="">Destino sugerido</option><option value="reciclaje">Reciclaje</option><option value="reutilizacion">Reutilización</option><option value="reparacion">Reparación</option><option value="compost">Compost / chipiado</option><option value="donacion">Donación</option><option value="retiro_circular">Retiro circular</option><option value="no_se">No sé</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="primaryBtn" onclick="guardar()">Publicar</button>
+  <button class="secondaryBtn" onclick="cerrarForm()">Cancelar</button>
+</div>
+
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({apiKey:"AIzaSyCAugMeB_lM2pz4x4Ywgp3ahviFkKNZOXY",authDomain:"registros-online-brandsen.firebaseapp.com",projectId:"registros-online-brandsen",storageBucket:"registros-online-brandsen.firebasestorage.app"});
+const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage(),provider=new firebase.auth.GoogleAuthProvider();
+let map,marcadorUsuario,unsubscribe=null,marcadores=[];
+function qs(id){return document.getElementById(id)}
+function loginSeguro(){}
+if(!localStorage.getItem('barrio')) qs('pantallaBarrio').style.display='flex';
+else initMapa();
+function guardarBarrio(){localStorage.setItem('barrio',qs('barrio').value);qs('pantallaBarrio').style.display='none';if(map){cargar();setTimeout(()=>map.invalidateSize(),150)}else initMapa();}
+function cambiarBarrio(){qs('pantallaBarrio').style.display='flex'}
+function toggleMenu(){qs('menuStats').style.display=qs('menuStats').style.display==='block'?'none':'block'}
+function toggleCircularPanel(){qs('panelCircular').style.display=qs('panelCircular').style.display==='block'?'none':'block'}
+function abrirForm(){qs('formModal').style.transform='translateY(0)'}function cerrarForm(){qs('formModal').style.transform='translateY(100%)'}
+function hablar(){if(!window.webkitSpeechRecognition){alert('Tu navegador no soporta dictado por voz en este modo.');return;}const rec=new webkitSpeechRecognition();rec.lang='es-AR';rec.start();rec.onresult=e=>{qs('desc').value+=(qs('desc').value?' ':'')+e.results[0][0].transcript;};}
+function normalizar(txt){return (txt||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+function evaluarCriticidadPorTexto(d){const t=normalizar(d.desc),tipo=normalizar(d.tipo);if(d.prioridadVecinal==='critica')return 'Alta';if(t.includes('pozo')||t.includes('inund')||t.includes('desborde')||t.includes('riesgo')||t.includes('cable')||t.includes('peligro'))return 'Alta';if(tipo==='cloacas'||tipo==='calle')return 'Alta';return 'Media';}
+function analizarCircularCompleto(d){const txt=normalizar(d.desc),mat=normalizar(d.materialCircular||''),tipo=normalizar(d.tipo);let objeto='Residuo general',material='Mixto',recuperable=false,recurso='Disposición final',destino='Recolección general',potencial='Bajo',area='Servicios Generales',prioridad=evaluarCriticidadPorTexto(d);if(txt.includes('mueble')||txt.includes('mesa')||txt.includes('silla')||txt.includes('ropero')||txt.includes('placard')||txt.includes('madera')||mat==='madera'){objeto='Mueble / madera';material='Madera';recuperable=true;recurso='Reparación, reutilización o recuperación de piezas';destino='Retiro Circular';potencial='Alto';area='Reciclaje / Carpintería social';}else if(txt.includes('pallet')||txt.includes('palet')||mat==='pallet'){objeto='Pallet';material='Madera';recuperable=true;recurso='Huertas, bancos, cercos o mobiliario';destino='Retiro Circular';potencial='Alto';area='Reciclaje / Reutilización';}else if(txt.includes('rama')||txt.includes('poda')||txt.includes('arbol')||tipo==='ramas / poda'||mat==='ramas'){objeto='Resto vegetal';material='Orgánico';recuperable=true;recurso='Compost, chipiado o biomasa';destino='Espacios Verdes';potencial='Alto';area='Espacios Verdes';}else if(txt.includes('botella')||txt.includes('envase')||txt.includes('plastico')||mat==='plastico'){objeto='Envases / plástico';material='Plástico';recuperable=true;recurso='Reciclado plástico';destino='Punto Verde';potencial='Medio';area='Reciclaje';}else if(txt.includes('vidrio')||txt.includes('cristal')||mat==='vidrio'){objeto='Vidrio';material='Vidrio';recuperable=true;recurso='Reciclado de vidrio';destino='Punto Verde';potencial='Medio';area='Reciclaje';}else if(txt.includes('carton')||txt.includes('papel')||mat==='carton'){objeto='Cartón / papel';material='Fibra';recuperable=true;recurso='Reciclado de fibra';destino='Reciclaje';potencial='Medio';area='Reciclaje';}else if(txt.includes('hierro')||txt.includes('metal')||txt.includes('chatarra')||mat==='metal'){objeto='Metal / chatarra';material='Metal';recuperable=true;recurso='Reciclado metálico';destino='Recuperador';potencial='Alto';area='Recuperador / Reciclaje';}else if(txt.includes('tv')||txt.includes('heladera')||txt.includes('pc')||txt.includes('computadora')||txt.includes('electrodomestico')||mat==='electronico'){objeto='Electrónico';material='RAEE';recuperable=true;recurso='Recuperación técnica o reciclado de componentes';destino='Gestión RAEE';potencial='Alto';area='RAEE';prioridad='Alta';}else if(txt.includes('escombro')||txt.includes('ladrillo')||txt.includes('bloque')||mat==='escombro'){objeto='Escombro';material='Mineral';recuperable=true;recurso='Relleno o reutilización en obra menor';destino='Obras Públicas';potencial='Medio';area='Obras Públicas';}else if(d.circularReportado){objeto='Recurso reportado por vecino';material=d.materialCircular||'A validar';recuperable=true;recurso='Validación y recuperación circular';destino=d.destinoSugerido||'Retiro Circular';potencial='Medio';area='Economía Circular';}return{objeto,material,recuperable,recurso,destino,potencial,area,prioridad};}
+function icono(tipo,circularData,prioridadVecinal='normal'){let clase='otros',txt='OT';if(circularData&&circularData.prioridad==='Alta'){clase='critico';txt='CR';}else if(circularData&&circularData.recuperable){clase='circular';txt='♻';}else{if(tipo==='Basura'){clase='basura';txt='BA';}if(tipo==='Calle'){clase='calle';txt='CA';}if(tipo==='Luminaria'){clase='luz';txt='LU';}if(tipo==='Cloacas'){clase='cloaca';txt='CL';}}if(prioridadVecinal==='critica'){clase='critico';txt='CR';}return L.divIcon({html:`<div class="markerCustom ${clase}">${txt}</div>`,className:'',iconSize:[46,46]});}
+function construirPopup(d,c){const estadoClass=d.estado==='resuelto'?'resuelto':d.estado==='en_proceso'?'proceso':'pendiente';const badgeClass=c.prioridad==='Alta'?'alerta':c.recuperable?'ok':'no';const badgeText=c.prioridad==='Alta'?'Crítico':c.recuperable?'Circular / recuperable':'Normal';return `<div class="popupBox"><div class="estado ${estadoClass}">${d.estado||'pendiente'}</div><div class="badgeCircular ${badgeClass}">${badgeText}</div><div style="font-weight:700;color:#1e3a8a;font-size:15px;">${d.tipo||'Sin tipo'}</div><div>${d.desc||'Sin descripción'}</div><div class="popupGroup">Objeto: <b>${c.objeto}</b><br>Material: <b>${c.material}</b><br>Recuperable: <b>${c.recuperable?'Sí':'No'}</b><br>Potencial: <b>${c.potencial}</b><br>Recurso: <b>${c.recurso}</b><br>Destino: <b>${c.destino}</b></div>${d.foto?`<img src="${d.foto}" alt="Foto reclamo">`:''}<br><a href="https://www.google.com/maps?q=${d.lat},${d.lng}" target="_blank">📍 Cómo llegar</a></div>`;}
+function initMapa(){if(map){cargar();setTimeout(()=>map.invalidateSize(),120);return;}map=L.map('map').setView([-35.21,-58.23],13);L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibHVrYXNzc3NzIiwiYSI6ImNtbnFjem9nZDA2ZGwyb29kdTZsaHE4cmQifQ.0pT5NUsfROkL4CMjq4r_wA`,{tileSize:512,zoomOffset:-1,maxZoom:20}).addTo(map);navigator.geolocation.getCurrentPosition(pos=>map.setView([pos.coords.latitude,pos.coords.longitude],17));navigator.geolocation.watchPosition(pos=>{const lat=pos.coords.latitude,lng=pos.coords.longitude;if(!marcadorUsuario){marcadorUsuario=L.marker([lat,lng],{icon:L.divIcon({html:`<div class="markerCustom usuario">YO</div>`,className:'',iconSize:[46,46]})}).addTo(map);}else marcadorUsuario.setLatLng([lat,lng]);});cargar();}
+async function subirFoto(file){if(!file)return '';qs('barraCarga').style.display='block';const ref=storage.ref().child('reclamos/'+Date.now()+'_'+file.name.replace(/\s+/g,'_'));const task=ref.put(file);return await new Promise((resolve,reject)=>{task.on('state_changed',snap=>{const p=Math.round((snap.bytesTransferred/snap.totalBytes)*100);qs('progreso').style.width=p+'%';qs('textoProgreso').innerText='Subiendo '+p+'%';},reject,async()=>{const url=await ref.getDownloadURL();qs('progreso').style.width='0%';qs('textoProgreso').innerText='Subiendo 0%';qs('barraCarga').style.display='none';resolve(url);});});}
+async function guardar(){try{const centro=map.getCenter();const user=auth.currentUser;const nombreLocal=localStorage.getItem('nombreVecino') || 'Vecino'; const emailLocal=(user && user.email) ? user.email : '';const desc=qs('desc').value.trim();if(!desc){alert('Escribí una descripción');return;}const fotoFile=qs('foto').files[0];const fotoUrl=await subirFoto(fotoFile);const data={uid:(user && user.uid) ? user.uid : 'anonimo',nombre:(user && user.displayName) ? user.displayName : nombreLocal,email:emailLocal,tipo:qs('tipo').value,desc,barrio:localStorage.getItem('barrio')||'Sin barrio',lat:centro.lat,lng:centro.lng,foto:fotoUrl||'',estado:'pendiente',fecha:firebase.firestore.FieldValue.serverTimestamp(),prioridadVecinal:qs('prioridadVecinal').value,circularReportado:qs('esCircular').checked,materialCircular:qs('materialCircular').value,destinoSugerido:qs('destinoSugerido').value};await db.collection('reclamos').add(data);qs('desc').value='';qs('foto').value='';qs('prioridadVecinal').value='normal';qs('esCircular').checked=false;qs('materialCircular').value='';qs('destinoSugerido').value='';cerrarForm();alert('Reclamo cargado');}catch(e){console.error(e);alert('Error al guardar');}}
+function limpiarMarcadores(){marcadores.forEach(m=>map.removeLayer(m));marcadores=[];}
+function cargar(){if(unsubscribe){unsubscribe();unsubscribe=null;}const barrio=localStorage.getItem('barrio');unsubscribe=db.collection('reclamos').where('barrio','==',barrio).onSnapshot(snap=>{if(!map)return;limpiarMarcadores();let total=0,basura=0,calle=0,luz=0,cloaca=0,otros=0,totalCircular=0,totalCriticos=0,maderaCircular=0,organicoCircular=0,reciclablesSecos=0,especialesCircular=0,alto=0,co2=0,ahorro=0;const bounds=[];snap.forEach(doc=>{const d={id:doc.id,...doc.data()};total++;if(d.tipo==='Basura')basura++;else if(d.tipo==='Calle')calle++;else if(d.tipo==='Luminaria')luz++;else if(d.tipo==='Cloacas')cloaca++;else otros++;const circular=analizarCircularCompleto(d);if(circular.recuperable){totalCircular++;ahorro+=50;co2+=2;}if(circular.prioridad==='Alta')totalCriticos++;if(circular.potencial==='Alto')alto++;if(circular.material==='Madera')maderaCircular++;if(circular.material==='Orgánico')organicoCircular++;if(circular.material==='Plástico'||circular.material==='Vidrio'||circular.material==='Fibra')reciclablesSecos++;if(circular.material==='RAEE'||circular.material==='Metal')especialesCircular++;if(d.lat&&d.lng){const m=L.marker([d.lat,d.lng],{icon:icono(d.tipo,circular,d.prioridadVecinal)}).addTo(map).bindPopup(construirPopup(d,circular));marcadores.push(m);bounds.push([d.lat,d.lng]);}});qs('total').innerText=total;qs('basura').innerText=basura;qs('calle').innerText=calle;qs('luz').innerText=luz;qs('cloaca').innerText=cloaca;qs('otros').innerText=otros;qs('totalCircular').innerText=totalCircular;qs('totalCriticos').innerText=totalCriticos;qs('maderaCircular').innerText=maderaCircular;qs('organicoCircular').innerText=organicoCircular;qs('reciclablesSecos').innerText=reciclablesSecos;qs('especialesCircular').innerText=especialesCircular;qs('resCircularAprovechable').innerText=totalCircular;qs('resCircularAlto').innerText=alto;qs('resAhorro').innerText='$'+ahorro;qs('resCO2').innerText=co2+' kg';if(bounds.length)map.fitBounds(bounds,{padding:[40,40]});});}
+</script>
+</body>
+</html>
